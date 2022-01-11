@@ -6,5 +6,5 @@ patchesStrategicMerge:
 - patches/KubeadmControlPlane.yaml
 - patches/AzureCluster.yaml
 - patches/AzureClusterIdentity.yaml
-- patches/KubeadmConfigTemplate
-- patches/AzureMachineTemplate
+- patches/KubeadmConfigTemplate.yaml
+- patches/AzureMachineTemplate.yaml
