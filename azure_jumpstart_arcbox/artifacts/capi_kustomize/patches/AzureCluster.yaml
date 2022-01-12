@@ -38,9 +38,5 @@ spec:
               destination: "*"
               destinationPorts: "443"
               source: "*"
-              sourcePorts: "*"
-      - name: node-subnet
-        role: node
-        cidrBlocks: 
-          - 10.0.2.0/24       
+              sourcePorts: "*"    
   resourceGroup: ${AZURE_RESOURCE_GROUP}
