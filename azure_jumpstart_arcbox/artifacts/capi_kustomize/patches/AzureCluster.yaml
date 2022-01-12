@@ -12,7 +12,7 @@ spec:
     vnet:
       name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
       cidrBlocks: 
-        - 10.0.0.0/16
+        - 10.0.0.0/8
     subnets:
       - name: control-plane-subnet
         role: control-plane
@@ -30,13 +30,8 @@ spec:
               destinationPorts: "6443"
               source: "*"
               sourcePorts: "*"
-            - name: "allow_apiserver_443"
-              description: "Allow K8s API Server 443"
-              direction: "Inbound"
-              priority: 2202
-              protocol: "*"
-              destination: "*"
-              destinationPorts: "443"
-              source: "*"
-              sourcePorts: "*"    
+      - name: node-subnet
+        role: node
+        cidrBlocks: 
+          - 10.1.0.0/16
   resourceGroup: ${AZURE_RESOURCE_GROUP}
