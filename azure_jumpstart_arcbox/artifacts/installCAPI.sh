@@ -181,16 +181,13 @@ until [[ $(sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes | grep
 echo ""
 sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig label node -l '!node-role.kubernetes.io/master' node-role.kubernetes.io/worker=worker
 echo ""
-sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes
+sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide
 echo ""
 
 # CAPI workload cluster kubeconfig housekeeping
-cp ~/.kube/config ~/.kube/config.backup
+cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.backup
 cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
 cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
-
-sudo kubectl get nodes -o wide
-# export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 sudo service sshd restart
 
@@ -200,27 +197,27 @@ sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --
 
 # Enabling Azure Policy for Kubernetes on the cluster
 echo ""
-# sudo -u $adminUsername az k8s-extension create --cluster-type connectedClusters --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --extension-type Microsoft.PolicyInsights --name arc-azurepolicy
+sudo -u $adminUsername az k8s-extension create --cluster-type connectedClusters --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --extension-type Microsoft.PolicyInsights --name arc-azurepolicy
 
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 echo ""
-# sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 echo ""
 sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 
 # Creating Storage Class with azure-managed-disk for the CAPI cluster
 echo ""
-sudo kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+sudo kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml
 
 # Renaming CAPI cluster context name 
 echo ""
-# sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi" --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
 
 # Copying workload CAPI kubeconfig file to staging storage account
 sudo -u $adminUsername az extension add --upgrade -n storage-preview
 storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
 storageContainerName="staging-capi"
-localPath="/home/${adminUsername}/.kube/config.$CLUSTER_NAME"
+localPath="~/.kube/config"
 storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
 sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
