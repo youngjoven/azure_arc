@@ -32,4 +32,6 @@ spec:
         natGateway:
           name: node-natgateway
         role: node
+        cidrBlocks:
+          - 10.0.2.0/24
   resourceGroup: ${AZURE_RESOURCE_GROUP}
