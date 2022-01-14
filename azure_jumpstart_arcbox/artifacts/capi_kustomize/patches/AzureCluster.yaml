@@ -12,12 +12,12 @@ spec:
     vnet:
       name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
       cidrBlocks: 
-        - 10.0.0.0/8
+        - 10.0.0.0/16
     subnets:
       - name: control-plane-subnet
         role: control-plane
-      - name: node-subnet
-        role: node
+        cidrBlocks: 
+          - 10.0.1.0/24
         securityGroup:
           name: ${CLUSTER_NAME}-cp-nsg
           securityRules:
@@ -30,4 +30,17 @@ spec:
               destinationPorts: "6443"
               source: "*"
               sourcePorts: "*"
+            - name: "allow_ssh"
+              description: "allow SSH"
+              direction: "Inbound"
+              priority: 2202
+              protocol: "*"
+              destination: "*"
+              destinationPorts: "22"
+              source: "*"
+              sourcePorts: "*"
+      - name: node-subnet
+        role: node
+        cidrBlocks: 
+          - 10.0.2.0/24        
   resourceGroup: ${AZURE_RESOURCE_GROUP}
