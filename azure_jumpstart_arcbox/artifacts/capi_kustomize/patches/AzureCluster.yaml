@@ -17,6 +17,7 @@ spec:
       - name: control-plane-subnet
         role: control-plane
       - name: node-subnet
+        role: node
         securityGroup:
           name: ${CLUSTER_NAME}-cp-nsg
           securityRules:
