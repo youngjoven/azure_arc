@@ -36,6 +36,4 @@ spec:
         role: node
         cidrBlocks: 
           - 10.0.2.0/24
-        apiServerLB:
-          type: Public
   resourceGroup: ${AZURE_RESOURCE_GROUP}
