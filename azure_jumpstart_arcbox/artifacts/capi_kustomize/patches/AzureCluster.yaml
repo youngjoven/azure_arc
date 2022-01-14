@@ -16,8 +16,7 @@ spec:
     subnets:
       - name: control-plane-subnet
         role: control-plane
-        cidrBlocks: 
-          - 10.0.1.0/24
+      - name: node-subnet
         securityGroup:
           name: ${CLUSTER_NAME}-cp-nsg
           securityRules:
@@ -30,8 +29,4 @@ spec:
               destinationPorts: "6443"
               source: "*"
               sourcePorts: "*"
-      - name: node-subnet
-        role: node
-        cidrBlocks: 
-          - 10.0.2.0/24
   resourceGroup: ${AZURE_RESOURCE_GROUP}

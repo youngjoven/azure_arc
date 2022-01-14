@@ -116,6 +116,7 @@ clusterctl version
 # Installing Helm 3
 sudo snap install helm --channel=3.6/stable --classic # pinning 3.6 due to breaking changes in aak8s onboarding with 3.7
 
+echo ""
 echo "Making sure Rancher K3s cluster is ready..."
 echo ""
 sudo kubectl wait --for=condition=Available --timeout=60s --all deployments -A >/dev/null
