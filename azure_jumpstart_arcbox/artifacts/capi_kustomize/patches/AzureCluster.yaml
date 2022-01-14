@@ -30,17 +30,10 @@ spec:
               destinationPorts: "6443"
               source: "*"
               sourcePorts: "*"
-            - name: "allow_ssh"
-              description: "allow SSH"
-              direction: "Inbound"
-              priority: 2202
-              protocol: "*"
-              destination: "*"
-              destinationPorts: "22"
-              source: "*"
-              sourcePorts: "*"
       - name: node-subnet
+        natGateway:
+          name: node-natgateway
         role: node
-        cidrBlocks: 
-          - 10.0.2.0/24        
+        cidrBlocks:
+          - 10.0.2.0/24
   resourceGroup: ${AZURE_RESOURCE_GROUP}

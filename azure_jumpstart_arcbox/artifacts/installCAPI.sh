@@ -19,6 +19,7 @@ echo $vmName:$5 | awk '{print substr($1,2); }' >> vars.sh
 echo $location:$6 | awk '{print substr($1,2); }' >> vars.sh
 echo $stagingStorageAccountName:$7 | awk '{print substr($1,2); }' >> vars.sh
 echo $logAnalyticsWorkspace:$8 | awk '{print substr($1,2); }' >> vars.sh
+echo $capiArcDataClusterName:$9 | awk '{print substr($1,2); }' >> vars.sh
 sed -i '2s/^/export adminUsername=/' vars.sh
 sed -i '3s/^/export SPN_CLIENT_ID=/' vars.sh
 sed -i '4s/^/export SPN_CLIENT_SECRET=/' vars.sh
@@ -27,8 +28,9 @@ sed -i '6s/^/export vmName=/' vars.sh
 sed -i '7s/^/export location=/' vars.sh
 sed -i '8s/^/export stagingStorageAccountName=/' vars.sh
 sed -i '9s/^/export logAnalyticsWorkspace=/' vars.sh
+sed -i '10s/^/export capiArcDataClusterName=/' vars.sh
 
-chmod +x vars.sh 
+chmod +x vars.sh
 . ./vars.sh
 
 # Syncing this script log to 'jumpstart_logs' directory for ease of troubleshooting
@@ -72,7 +74,7 @@ export KUBERNETES_VERSION="1.22.5" # Do not change!
 export CONTROL_PLANE_MACHINE_COUNT="1"
 export WORKER_MACHINE_COUNT="3"
 export AZURE_LOCATION=$location # Name of the Azure datacenter location.
-export CLUSTER_NAME="arcbox-capi-data" # Name of the CAPI workload cluster. Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+export CLUSTER_NAME=$(echo "${capiArcDataClusterName,,}") # Name of the CAPI workload cluster. Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
 export AZURE_SUBSCRIPTION_ID=$subscriptionId
 export AZURE_TENANT_ID=$SPN_TENANT_ID
 export AZURE_CLIENT_ID=$SPN_CLIENT_ID
@@ -191,17 +193,17 @@ sudo service sshd restart
 
 # Onboarding the cluster to Azure Arc
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
-sudo -u $adminUsername az connectedk8s connect --name ArcBox-CAPI-Data --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context 'arcbox-capi-data-admin@arcbox-capi-data'
+sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context 'arcbox-capi-data-admin@arcbox-capi-data'
 
 # Enabling Azure Policy for Kubernetes on the cluster
 echo ""
-sudo -u $adminUsername az k8s-extension create --cluster-type connectedClusters --cluster-name ArcBox-CAPI-Data --resource-group $AZURE_RESOURCE_GROUP --extension-type Microsoft.PolicyInsights --name arc-azurepolicy
+# sudo -u $adminUsername az k8s-extension create --cluster-type connectedClusters --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --extension-type Microsoft.PolicyInsights --name arc-azurepolicy
 
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 echo ""
-sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name ArcBox-CAPI-Data --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+# sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 echo ""
-sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name ArcBox-CAPI-Data --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 
 # Creating Storage Class with azure-managed-disk for the CAPI cluster
 echo ""
