@@ -33,5 +33,5 @@ spec:
       - name: node-subnet
         role: node
         cidrBlocks: 
-          - 10.1.0.0/16
+          - 10.0.2.0/24
   resourceGroup: ${AZURE_RESOURCE_GROUP}
