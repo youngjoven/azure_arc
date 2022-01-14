@@ -185,15 +185,18 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes
 echo ""
 
 # CAPI workload cluster kubeconfig housekeeping
-cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config.$CLUSTER_NAME
-cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
-export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
+cp ~/.kube/config ~/.kube/config.backup
+cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
+cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
+
+sudo kubectl get nodes -o wide
+# export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 sudo service sshd restart
 
 # Onboarding the cluster to Azure Arc
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
-sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context 'arcbox-capi-data-admin@arcbox-capi-data'
+sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox'
 
 # Enabling Azure Policy for Kubernetes on the cluster
 echo ""
@@ -211,7 +214,7 @@ sudo kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main
 
 # Renaming CAPI cluster context name 
 echo ""
-sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi" --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+# sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi" --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
 # Copying workload CAPI kubeconfig file to staging storage account
 sudo -u $adminUsername az extension add --upgrade -n storage-preview
