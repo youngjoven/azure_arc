@@ -38,6 +38,12 @@ variable "capi_vm_name" {
   default     = "ArcBox-CAPI-MGMT"
 }
 
+variable "capi_arc_cluster_name" {
+  type        = string
+  description = "The name of the client virtual machine."
+  default     = "ArcBox-CAPI-Data"
+}
+
 variable "rancher_vm_name" {
   type        = string
   description = "The name of the client virtual machine."

@@ -10,11 +10,14 @@ spec:
     name: cluster-identity
   networkSpec:
     vnet:
-      resourceGroup: ${AZURE_RESOURCE_GROUP}
-      name: "ArcBox-VNet"
+      name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
+      cidrBlocks: 
+        - 10.0.0.0/16
     subnets:
-      - name: control-plane-subnet
+      - name: capz-control-plane-subnet
         role: control-plane
+        cidrBlocks: 
+          - 10.0.1.0/24
         securityGroup:
           name: ${CLUSTER_NAME}-cp-nsg
           securityRules:
@@ -27,8 +30,12 @@ spec:
               destinationPorts: "6443"
               source: "*"
               sourcePorts: "*"
-      - name: node-subnet
+      - name: capz-worker-node-subnet
         natGateway:
-          name: node-natgateway
+          name: node-natgateway      
         role: node
+        cidrBlocks: 
+          - 10.0.2.0/24
+        apiServerLB:
+          type: Public
   resourceGroup: ${AZURE_RESOURCE_GROUP}
