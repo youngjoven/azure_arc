@@ -9,7 +9,7 @@ sudo sed -i "s/PasswordAuthentication no/PasswordAuthentication yes/" /etc/ssh/s
 sudo adduser staginguser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password
 sudo echo "staginguser:ArcPassw0rd" | sudo chpasswd
 
-# Injecting environment variables
+# Injecting environment variables from Azure deployment
 echo '#!/bin/bash' >> vars.sh
 echo $adminUsername:$1 | awk '{print substr($1,2); }' >> vars.sh
 echo $SPN_CLIENT_ID:$2 | awk '{print substr($1,2); }' >> vars.sh
@@ -74,7 +74,7 @@ export KUBERNETES_VERSION="1.22.5" # Do not change!
 export CONTROL_PLANE_MACHINE_COUNT="1"
 export WORKER_MACHINE_COUNT="3"
 export AZURE_LOCATION=$location # Name of the Azure datacenter location.
-export CLUSTER_NAME=$(echo "${capiArcDataClusterName,,}") # Name of the CAPI workload cluster. Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+export CLUSTER_NAME=$(echo "${capiArcDataClusterName,,}") # Converting to lowercase case variable > # Name of the CAPI workload cluster. Must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character (e.g. 'example.com', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
 export AZURE_SUBSCRIPTION_ID=$subscriptionId
 export AZURE_TENANT_ID=$SPN_TENANT_ID
 export AZURE_CLIENT_ID=$SPN_CLIENT_ID
@@ -94,6 +94,7 @@ export CLUSTER_IDENTITY_NAME="cluster-identity"
 export AZURE_CLUSTER_IDENTITY_SECRET_NAMESPACE="default"
 
 # Installing Rancher K3s single node cluster using k3sup
+echo ""
 sudo mkdir ~/.kube
 sudo -u $adminUsername mkdir /home/${adminUsername}/.kube
 curl -sLS https://get.k3sup.dev | sh
@@ -110,12 +111,14 @@ kubectl config set-context arcboxcapimgmt
 kubectl get node -o wide
 
 # Installing clusterctl
+echo ""
 curl -L https://github.com/kubernetes-sigs/cluster-api/releases/download/v${CLUSTERCTL_VERSION}/clusterctl-linux-amd64 -o clusterctl
 sudo chmod +x ./clusterctl
 sudo mv ./clusterctl /usr/local/bin/clusterctl
 clusterctl version
 
 # Installing Helm 3
+echo ""
 sudo snap install helm --channel=3.6/stable --classic # pinning 3.6 due to breaking changes in aak8s onboarding with 3.7
 
 echo ""
@@ -185,13 +188,14 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide
 echo ""
 
 # CAPI workload cluster kubeconfig housekeeping
-cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.backup
+cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
 cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
 
 sudo service sshd restart
 
 # Onboarding the cluster to Azure Arc
+echo ""
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
 sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox'
 
@@ -214,14 +218,16 @@ echo ""
 sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
 
 # Copying workload CAPI kubeconfig file to staging storage account
+echo ""
 sudo -u $adminUsername az extension add --upgrade -n storage-preview
 storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
 storageContainerName="staging-capi"
-localPath="~/.kube/config"
+localPath="/home/${adminUsername}/.kube/config"
 storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
 sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
 
 # Uploading this script log to staging storage for ease of troubleshooting
+echo ""
 log="/home/${adminUsername}/jumpstart_logs/installCAPI.log"
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $log
