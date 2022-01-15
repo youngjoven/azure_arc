@@ -191,7 +191,7 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand 
 echo ""
 cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
-# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
+cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/tmp/config
 
 sudo service sshd restart
 
@@ -203,12 +203,12 @@ sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 echo ""
 sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
-# echo ""
-# sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+echo ""
+sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 
-# # Enabling Azure Policy for Kubernetes on the cluster
-# echo ""
-# sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName ---resource-group $AZURE_RESOURCE_GROUP -cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
+# Enabling Azure Policy for Kubernetes on the cluster
+echo ""
+sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName ---resource-group $AZURE_RESOURCE_GROUP -cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
 
 
 # Creating Storage Class with azure-managed-disk for the CAPI cluster
@@ -224,10 +224,11 @@ echo ""
 sudo -u $adminUsername az extension add --upgrade -n storage-preview
 storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
 storageContainerName="staging-capi"
-localPath="/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig"
+localPath="/home/${adminUsername}/tmp/config"
 storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
 sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
+sudo -u $adminUsername rm $localPath
 
 # Uploading this script log to staging storage for ease of troubleshooting
 echo ""
