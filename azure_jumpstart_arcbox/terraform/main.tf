@@ -201,18 +201,19 @@ module "capi_vm" {
   source = "./modules/kubernetes/ubuntuCapi"
   count  = contains(["Full", "Developer"], var.deployment_flavor) ? 1 : 0
 
-  resource_group_name  = azurerm_resource_group.rg.name
-  vm_name              = var.capi_vm_name
-  virtual_network_name = var.virtual_network_name
-  subnet_name          = var.subnet_name
-  user_ip_address      = var.user_ip_address
-  template_base_url    = local.template_base_url
-  storage_account_name = module.management_storage.storage_account_name
-  spn_client_id        = var.spn_client_id
-  spn_client_secret    = var.spn_client_secret
-  spn_tenant_id        = var.spn_tenant_id
-  admin_username       = var.client_admin_username
-  admin_ssh_key        = var.client_admin_ssh
+  resource_group_name   = azurerm_resource_group.rg.name
+  vm_name               = var.capi_vm_name
+  virtual_network_name  = var.virtual_network_name
+  subnet_name           = var.subnet_name
+  user_ip_address       = var.user_ip_address
+  template_base_url     = local.template_base_url
+  storage_account_name  = module.management_storage.storage_account_name
+  spn_client_id         = var.spn_client_id
+  spn_client_secret     = var.spn_client_secret
+  spn_tenant_id         = var.spn_tenant_id
+  admin_username        = var.client_admin_username
+  admin_ssh_key         = var.client_admin_ssh
+  capi_arc_cluster_name = var.capi_arc_cluster_name
 
   depends_on = [
     azurerm_resource_group.rg,
