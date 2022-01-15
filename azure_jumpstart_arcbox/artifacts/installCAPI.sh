@@ -208,7 +208,7 @@ sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cl
 
 # Enabling Azure Policy for Kubernetes on the cluster
 echo ""
-sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName ---resource-group $AZURE_RESOURCE_GROUP -cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
+sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
 
 
 # Creating Storage Class with azure-managed-disk for the CAPI cluster
