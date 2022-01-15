@@ -143,11 +143,19 @@ echo ""
 # Creating CAPI Workload cluster yaml manifest
 echo "Deploying Kubernetes workload cluster"
 echo ""
+
+if ! command -v svn &> /dev/null
+then
+    echo "svn could not be found, trying to install..."
+    sudo apt-get install subversion -y
+fi
+
 sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
 kubectl kustomize capz_kustomize/ > arcbox.yaml
 clusterctl generate yaml --from arcbox.yaml > template.yaml
 
 # Building Microsoft Defender for Cloud plumbing for Cluster API
+echo ""
 curl -o audit-policy.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
 cat <<EOF | sudo kubectl apply -f -
