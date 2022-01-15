@@ -191,7 +191,7 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand 
 echo ""
 cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
-cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/jumpstart_logs/config
+cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/~.kube/config.workload
 
 sudo service sshd restart
 
@@ -217,7 +217,7 @@ sudo kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main
 
 # Renaming CAPI cluster context name 
 echo ""
-sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
+# sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
 
 # Copying workload CAPI kubeconfig file to staging storage account
 echo ""
@@ -228,7 +228,7 @@ localPath="/home/${adminUsername}/jumpstart_logs/config"
 storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
 sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
-sudo -u $adminUsername rm $localPath
+# sudo -u $adminUsername rm $localPath
 
 # Uploading this script log to staging storage for ease of troubleshooting
 echo ""
