@@ -143,7 +143,7 @@ echo ""
 # Creating CAPI Workload cluster yaml manifest
 echo "Deploying Kubernetes workload cluster"
 echo ""
-sudo svn export https://github.com/microsoft/azure_arc/branches/capz_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
+sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
 kubectl kustomize capz_kustomize/ > arcbox.yaml
 clusterctl generate yaml --from arcbox.yaml > template.yaml
 
