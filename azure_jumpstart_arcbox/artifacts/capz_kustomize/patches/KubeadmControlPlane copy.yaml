@@ -11,14 +11,25 @@ spec:
           allocate-node-cidrs: "true"    
       apiServer:
         extraArgs:
+          audit-log-maxage: "30"
+          audit-log-maxbackup: "10"
+          audit-log-maxsize: "100"
+          audit-log-path: /var/log/kube-apiserver/audit.log
+          audit-policy-file: /etc/kubernetes/audit-policy.yaml
           cloud-config: /etc/kubernetes/azure.json
           cloud-provider: azure
         extraVolumes:
+        - hostPath: /var/log/kube-apiserver
+          mountPath: /var/log/kube-apiserver
+          name: kubeaudit
+        - hostPath: /etc/kubernetes/audit-policy.yaml
+          mountPath: /etc/kubernetes/audit-policy.yaml
+          name: audit-policy
+          readOnly: true
         - hostPath: /etc/kubernetes/azure.json
           mountPath: /etc/kubernetes/azure.json
           name: cloud-config
           readOnly: true
-        timeoutForControlPlane: 20m
     files:
     - contentFrom:
         secret:
