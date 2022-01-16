@@ -204,10 +204,11 @@ sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
 # # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
-sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
-sudo -u $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config3
-sudo -s $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config4
+clusterctl get kubeconfig $CLUSTER_NAME > config
+# sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
+# sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
+# sudo -u $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config3
+# sudo -s $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config4
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
 
@@ -243,7 +244,7 @@ echo ""
 sudo -u $adminUsername az extension add --upgrade -n storage-preview
 storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
 storageContainerName="staging-capi"
-export localPath="$HOME/.kube/config.$CLUSTER_NAME"
+export localPath="/home/${adminUsername}/.kube/config"
 storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
 sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
