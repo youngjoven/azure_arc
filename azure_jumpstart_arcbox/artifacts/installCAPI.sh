@@ -108,7 +108,6 @@ chown -R staginguser /home/${adminUsername}/.kube/config.staging
 
 export KUBECONFIG=/var/lib/waagent/custom-script/download/0/kubeconfig
 kubectl config set-context arcboxcapimgmt
-kubectl get node -o wide
 
 # Installing clusterctl
 echo ""
@@ -198,14 +197,17 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand 
 # CAPI workload cluster kubeconfig housekeeping
 echo ""
 # sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
-clusterctl get kubeconfig $CLUSTER_NAME > ./config1
-clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config2
-sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > ./config3
-sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config4
+
+clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+
+# sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config4
 
 
 sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
 sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
+
+sudo -u $adminUsername mv /home/${adminUsername}/.kube/config.$CLUSTER_NAME /home/${adminUsername}/.kube/config
+
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
 # # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
