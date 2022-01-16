@@ -183,7 +183,7 @@ echo ""
 sudo kubectl get kubeadmcontrolplane --all-namespaces
 clusterctl get kubeconfig $CLUSTER_NAME > $CLUSTER_NAME.kubeconfig
 echo ""
-sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/master/templates/addons/calico.yaml
+sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/addons/calico.yaml
 
 echo ""
 CLUSTER_TOTAL_MACHINE_COUNT=`expr $CONTROL_PLANE_MACHINE_COUNT + $WORKER_MACHINE_COUNT`
@@ -240,7 +240,7 @@ sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-na
 
 # Creating Storage Class with azure-managed-disk for the CAPI cluster
 echo ""
-sudo kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml
+sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml
 
 # Renaming CAPI cluster context name 
 echo ""
