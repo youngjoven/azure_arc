@@ -125,7 +125,7 @@ echo ""
 echo "Making sure Rancher K3s cluster is ready..."
 echo ""
 sudo kubectl wait --for=condition=Available --timeout=60s --all deployments -A >/dev/null
-sudo kubectl get nodes
+sudo kubectl get nodes -o wide | expand | awk 'length($0) > length(longest) { longest = $0 } { lines[NR] = $0 } END { gsub(/./, "=", longest); print "/=" longest "=\\"; n = length(longest); for(i = 1; i <= NR; ++i) { printf("| %s %*s\n", lines[i], n - length(lines[i]) + 1, "|"); } print "\\=" longest "=/" }'
 echo ""
 
 # Creating a secret to include the password of the Service Principal identity created in Azure
@@ -198,13 +198,18 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand 
 # CAPI workload cluster kubeconfig housekeeping
 echo ""
 # sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
+clusterctl get kubeconfig $CLUSTER_NAME > ./config1
+clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config2
+sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > ./config3
+sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config4
+
+
 sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
 sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
 # # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-clusterctl get kubeconfig $CLUSTER_NAME > config
 # sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
 # sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
 # sudo -u $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config3
