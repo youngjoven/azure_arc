@@ -204,7 +204,7 @@ sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
 # # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-sudo -u $adminUsername cp $CLUSTER_NAME.kubeconfig .kube/config
+sudo -u $adminUsername cp $CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
 
