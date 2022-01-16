@@ -79,7 +79,7 @@ sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-nam
 
 # Enable Azure Policy for Kubernetes on the cluster
 sudo -u $adminUsername az provider register --namespace 'Microsoft.PolicyInsights' --wait
-sudo -u $adminUsername az k8s-extension create --cluster-type connectedClusters --cluster-name $vmName --resource-group $resourceGroup --extension-type Microsoft.PolicyInsights --name arc-azurepolicy --only-show-errors
+sudo -u $adminUsername az k8s-extension create --cluster-type connectedClusters --cluster-name $vmName --resource-group $resourceGroup --extension-type Microsoft.PolicyInsights --name arc-azurepolicy
 
 # Copying Rancher K3s kubeconfig file to staging storage account
 sudo -u $adminUsername az extension add --upgrade -n storage-preview

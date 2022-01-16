@@ -6,6 +6,9 @@ metadata:
 spec:
   kubeadmConfigSpec:
     clusterConfiguration:
+      controllerManager:
+        extraArgs:
+          allocate-node-cidrs: "true"    
       apiServer:
         extraArgs:
           audit-log-maxage: "30"
