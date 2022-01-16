@@ -197,14 +197,14 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand 
 
 # CAPI workload cluster kubeconfig housekeeping
 echo ""
-sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
-sudo cp ~/.kube/config ~/.kube/config.k3s
-sudo rm -fv ~/.kube/config
+# sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
+# sudo cp ~/.kube/config ~/.kube/config.k3s
+sudo rm -fv .kube/config
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
 # # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-sudo cp -r $CLUSTER_NAME.kubeconfig ~/.kube/config
+sudo cp -r $CLUSTER_NAME.kubeconfig .kube/config
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
 
