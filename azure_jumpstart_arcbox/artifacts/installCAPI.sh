@@ -153,19 +153,21 @@ sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/a
 kubectl kustomize capz_kustomize/ > arcbox.yaml
 clusterctl generate yaml --from arcbox.yaml > template.yaml
 
-# Building Microsoft Defender for Cloud plumbing for Cluster API
+# Creating Microsoft Defender for Cloud audit secret
 echo ""
+echo "Creating Microsoft Defender for Cloud audit secret"
 curl -o audit-policy.yaml https://raw.githubusercontent.com/Azure/Microsoft-Defender-for-Cloud/main/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
 cat <<EOF | sudo kubectl apply -f -
 apiVersion: v1
-kind: Secret
-metadata:
-  name: audit
-type: Opaque
 data:
   password: $(cat "audit-policy.yaml" | base64 -w0)
   username: $(echo -n "jumpstart" | base64 -w0)
+kind: Secret
+metadata:
+  name: audit-policy
+  namespace: default
+type: Opaque
 EOF
 
 # Deploying CAPI Workload cluster
