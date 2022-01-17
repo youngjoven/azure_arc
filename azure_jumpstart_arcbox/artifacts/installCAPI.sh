@@ -155,7 +155,7 @@ clusterctl generate yaml --from arcbox.yaml > template.yaml
 
 # Building Microsoft Defender for Cloud plumbing for Cluster API
 echo ""
-curl -o audit-policy.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
+curl -o audit-policy.yaml https://raw.githubusercontent.com/Azure/Microsoft-Defender-for-Cloud/main/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
 cat <<EOF | sudo kubectl apply -f -
 apiVersion: v1
