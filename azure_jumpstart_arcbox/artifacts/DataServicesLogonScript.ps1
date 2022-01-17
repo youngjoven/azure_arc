@@ -13,15 +13,15 @@ Connect-AzAccount -Credential $psCred -TenantId $env:spnTenantId -ServicePrincip
 # Required for CLI commands
 az login --service-principal --username $env:spnClientID --password $env:spnClientSecret --tenant $env:spnTenantId
 
-# Install Azure Data Studio extensions
-Write-Host "`n"
-Write-Host "Installing Azure Data Studio Extensions"
-Write-Host "`n"
-$env:argument1="--install-extension"
-$env:argument2="Microsoft.arc"
-$env:argument3="microsoft.azuredatastudio-postgresql"
-& "C:\Program Files\Azure Data Studio\bin\azuredatastudio.cmd" $env:argument1 $env:argument2
-& "C:\Program Files\Azure Data Studio\bin\azuredatastudio.cmd" $env:argument1 $env:argument3
+# # Install Azure Data Studio extensions
+# Write-Host "`n"
+# Write-Host "Installing Azure Data Studio Extensions"
+# Write-Host "`n"
+# $env:argument1="--install-extension"
+# $env:argument2="Microsoft.arc"
+# $env:argument3="microsoft.azuredatastudio-postgresql"
+# & "C:\Program Files\Azure Data Studio\bin\azuredatastudio.cmd" $env:argument1 $env:argument2
+# & "C:\Program Files\Azure Data Studio\bin\azuredatastudio.cmd" $env:argument1 $env:argument3
 
 # Create Azure Data Studio desktop shortcut
 Write-Host "`n"

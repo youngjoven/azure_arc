@@ -171,6 +171,16 @@ workflow ClientTools_02
     InlineScript {
         Expand-Archive $Env:ArcBoxDir\azuredatastudio.zip -DestinationPath 'C:\Program Files\Azure Data Studio'
         Start-Process msiexec.exe -Wait -ArgumentList "/I $Env:ArcBoxDir\AZDataCLI.msi /quiet"
+      
+        # Installing Azure Data Studio extensions
+        Invoke-Command -ScriptBlock {
+            $env:argument1 = "--install-extension"
+            $env:argument2 = "Microsoft.arc"
+            $env:argument3 = "microsoft.azuredatastudio-postgresql"
+            # Installing Azure Data Studio extensions
+            & C:\Program Files\Azure Data Studio\bin\azuredatastudio.cmd $env:argument1 $env:argument2
+            & C:\Program Files\Azure Data Studio\bin\azuredatastudio.cmd $env:argument1 $env:argument3
+        }
     }
 }
         
