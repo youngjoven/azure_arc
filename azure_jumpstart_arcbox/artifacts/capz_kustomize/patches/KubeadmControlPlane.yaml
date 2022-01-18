@@ -38,10 +38,10 @@ spec:
       owner: root:root
       path: /etc/kubernetes/azure.json
       permissions: "0644"    
-    - contentFrom:
-        secret:
-          key: password
-          name: audit-policy
-      owner: root:root
-      path: /etc/kubernetes/audit-policy.yaml
-      permissions: "0644"
+    # - contentFrom:
+    #     secret:
+    #       key: password
+    #       name: audit-policy
+    #   owner: root:root
+    #   path: /etc/kubernetes/audit-policy.yaml
+    #   permissions: "0644"
