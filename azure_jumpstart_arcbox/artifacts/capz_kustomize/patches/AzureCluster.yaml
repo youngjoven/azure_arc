@@ -34,6 +34,8 @@ spec:
       natGateway:
         name: node-natgateway
       role: node
+      cidrBlocks:
+      - 10.0.2.0/24      
     vnet:
       name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
   resourceGroup: ${AZURE_RESOURCE_GROUP}
