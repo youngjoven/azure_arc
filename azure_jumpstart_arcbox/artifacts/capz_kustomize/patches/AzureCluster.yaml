@@ -12,12 +12,12 @@ spec:
     vnet:
       name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
       cidrBlocks: 
-        - 172.16.0.0/16
+        - 10.0.0.0/16
     subnets:
       - name: capz-cp-subnet
         role: control-plane
         cidrBlocks: 
-          - 172.16.1.0/24
+          - 10.0.1.0/24
         securityGroup:
           name: ${CLUSTER_NAME}-cp-nsg
           securityRules:
@@ -35,5 +35,5 @@ spec:
           name: node-natgateway      
         role: node
         cidrBlocks: 
-          - 172.16.2.0/24
+          - 10.0.2.0/24
   resourceGroup: ${AZURE_RESOURCE_GROUP}

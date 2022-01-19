@@ -185,9 +185,9 @@ echo ""
 sudo kubectl get kubeadmcontrolplane --all-namespaces
 clusterctl get kubeconfig $CLUSTER_NAME > $CLUSTER_NAME.kubeconfig
 echo ""
-# sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/addons/calico.yaml
+sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/addons/calico.yaml
 
-sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+# sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
 echo ""
 CLUSTER_TOTAL_MACHINE_COUNT=`expr $CONTROL_PLANE_MACHINE_COUNT + $WORKER_MACHINE_COUNT`
@@ -200,17 +200,22 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand 
 
 # CAPI workload cluster kubeconfig housekeeping
 echo ""
-# sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
+cp /var/lib/waagent/custom-script/download/0/$CAPI_WORKLOAD_CLUSTER_NAME.kubeconfig ~/.kube/config.$CAPI_WORKLOAD_CLUSTER_NAME
+cp /var/lib/waagent/custom-script/download/0/$CAPI_WORKLOAD_CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CAPI_WORKLOAD_CLUSTER_NAME
+export KUBECONFIG=~/.kube/config.arcbox-capi-data
 
-clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+
+sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
+
+# clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
 # sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config4
 
 
-sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
-sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
+# sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
+# sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
 
-sudo -u $adminUsername mv /home/${adminUsername}/.kube/config.$CLUSTER_NAME /home/${adminUsername}/.kube/config
+# sudo -u $adminUsername mv /home/${adminUsername}/.kube/config.$CLUSTER_NAME /home/${adminUsername}/.kube/config
 
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
 # # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
@@ -229,7 +234,7 @@ sudo service sshd restart
 # Onboarding the cluster to Azure Arc
 echo ""
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
-sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox'
+sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CAPI_WORKLOAD_CLUSTER_NAME --kube-context 'arcbox-capi-data-admin@arcbox-capi-data'
 
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 echo ""
@@ -244,7 +249,7 @@ sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-na
 
 # Creating Storage Class with azure-managed-disk for the CAPI cluster
 echo ""
-sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml
+sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml --kubeconfig /home/${adminUsername}/.kube/config.$CAPI_WORKLOAD_CLUSTER_NAME
 
 # Renaming CAPI cluster context name 
 echo ""
@@ -255,7 +260,7 @@ echo ""
 sudo -u $adminUsername az extension add --upgrade -n storage-preview
 storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
 storageContainerName="staging-capi"
-export localPath="/home/${adminUsername}/.kube/config"
+export localPath="/home/${adminUsername}/.kube/config.$CAPI_WORKLOAD_CLUSTER_NAME"
 storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
 sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
 sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
