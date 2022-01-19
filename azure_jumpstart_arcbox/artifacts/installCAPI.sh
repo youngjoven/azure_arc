@@ -162,10 +162,10 @@ cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
-  name: audit
+  name: audit-policy
 type: Opaque
 data:
-  audit-policy.yaml: $(cat "audit-policy.yaml" | base64 -w0)
+  password: $(cat "audit-policy.yaml" | base64 -w0)
   username: $(echo -n "jumpstart" | base64 -w0)
 EOF
 
