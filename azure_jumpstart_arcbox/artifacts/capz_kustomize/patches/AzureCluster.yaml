@@ -11,29 +11,29 @@ spec:
   networkSpec:
     vnet:
       name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
-      cidrBlocks: 
+      cidrBlocks:
         - 10.0.0.0/16
     subnets:
-      - name: capz-cp-subnet
-        role: control-plane
-        cidrBlocks: 
-          - 10.0.1.0/24
-        securityGroup:
-          name: ${CLUSTER_NAME}-cp-nsg
-          securityRules:
-            - name: "allow_apiserver"
-              description: "Allow K8s API Server"
-              direction: "Inbound"
-              priority: 2201
-              protocol: "*"
-              destination: "*"
-              destinationPorts: "6443"
-              source: "*"
-              sourcePorts: "*"
-      - name: capz-node-subnet
-        natGateway:
-          name: node-natgateway      
-        role: node
-        cidrBlocks: 
-          - 10.0.2.0/24
+    - name: control-plane-subnet
+      role: control-plane
+      cidrBlocks:
+      - 10.0.1.0/24
+      securityGroup:
+        name: ${CLUSTER_NAME}-cp-nsg
+        securityRules:
+          - name: "allow_apiserver"
+            description: "Allow K8s API Server"
+            direction: "Inbound"
+            priority: 2201
+            protocol: "*"
+            destination: "*"
+            destinationPorts: "6443"
+            source: "*"
+            sourcePorts: "*"
+    - name: node-subnet
+      natGateway:
+        name: node-natgateway
+      role: node
+    vnet:
+      name: ${AZURE_VNET_NAME:=${CLUSTER_NAME}-vnet}
   resourceGroup: ${AZURE_RESOURCE_GROUP}
