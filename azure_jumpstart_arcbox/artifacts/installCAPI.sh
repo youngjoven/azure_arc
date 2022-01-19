@@ -158,16 +158,15 @@ echo ""
 echo "Creating Microsoft Defender for Cloud audit secret"
 curl -o audit-policy.yaml https://raw.githubusercontent.com/Azure/Microsoft-Defender-for-Cloud/main/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
-cat <<EOF | sudo kubectl apply -f -
+cat <<EOF | kubectl apply -f -
 apiVersion: v1
-data:
-  password: $(cat "audit-policy.yaml" | base64 -w0)
-  username: $(echo -n "jumpstart" | base64 -w0)
 kind: Secret
 metadata:
-  name: audit-policy
-  namespace: default
+  name: audit
 type: Opaque
+data:
+  audit-policy.yaml: $(cat "audit-policy.yaml" | base64 -w0)
+  username: $(echo -n "jumpstart" | base64 -w0)
 EOF
 
 # Deploying CAPI Workload cluster
