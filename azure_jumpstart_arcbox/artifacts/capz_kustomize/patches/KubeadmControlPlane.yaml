@@ -27,7 +27,6 @@ spec:
           mountPath: /etc/kubernetes/azure.json
           name: cloud-config
           readOnly: true
-        timeoutForControlPlane: 20m
     files:
     - contentFrom:
         secret:
@@ -42,4 +41,4 @@ spec:
           name: audit-policy
       owner: root:root
       path: /etc/kubernetes/audit-policy.yaml
-      permissions: "0644"    
+      permissions: "0644"
