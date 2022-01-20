@@ -37,8 +37,8 @@ spec:
       permissions: "0644"
     - contentFrom:
         secret:
-          key: audit-policy.yaml
-          name: audit-policy
+          key: audit.yaml
+          name: audit
       owner: root:root
-      path: /etc/kubernetes/audit-policy.yaml
+      path: /etc/kubernetes/audit.yaml
       permissions: "0644"
