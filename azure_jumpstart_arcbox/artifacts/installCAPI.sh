@@ -165,7 +165,7 @@ metadata:
   name: audit-policy
 type: Opaque
 data:
-  password: $(cat "audit-policy.yaml" | base64 -w0)
+  audit-policy.yaml: $(cat "audit-policy.yaml" | base64 -w0)
   username: $(echo -n "jumpstart" | base64 -w0)
 EOF
 
