@@ -156,16 +156,16 @@ clusterctl generate yaml --from arcbox.yaml > template.yaml
 # Creating Microsoft Defender for Cloud audit secret
 echo ""
 echo "Creating Microsoft Defender for Cloud audit secret"
-curl -o audit-policy.yaml https://raw.githubusercontent.com/Azure/Microsoft-Defender-for-Cloud/main/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
+curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
-  name: audit-policy
+  name: audit
 type: Opaque
 data:
-  audit-policy.yaml: $(cat "audit-policy.yaml" | base64 -w0)
+  audit.yaml: $(cat "audit.yaml" | base64 -w0)
   username: $(echo -n "jumpstart" | base64 -w0)
 EOF
 
