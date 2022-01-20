@@ -131,8 +131,8 @@ echo ""
 # This secret will be referenced by the AzureClusterIdentity used by the AzureCluster
 kubectl create secret generic "${AZURE_CLUSTER_IDENTITY_SECRET_NAME}" --from-literal=clientSecret="${AZURE_CLIENT_SECRET}"
 
-# Transforming the Rancher K3s cluster to a Cluster API management cluster
-echo "Transforming the Kubernetes cluster to a management cluster with the Cluster API Azure Provider (CAPZ)..."
+# Converting the Rancher K3s cluster to a Cluster API management cluster
+echo "Converting the Kubernetes cluster to a management cluster with the Cluster API Azure Provider (CAPZ)..."
 clusterctl init --infrastructure=azure:v${CAPI_PROVIDER_VERSION}
 echo "Making sure cluster is ready..."
 echo ""
@@ -142,16 +142,22 @@ echo ""
 # Creating CAPI Workload cluster yaml manifest
 echo "Deploying Kubernetes workload cluster"
 echo ""
+clusterctl generate cluster $CLUSTER_NAME \
+  --kubernetes-version v$KUBERNETES_VERSION \
+  --control-plane-machine-count=$CONTROL_PLANE_MACHINE_COUNT \
+  --worker-machine-count=$WORKER_MACHINE_COUNT \
+  > $CLUSTER_NAME.yaml
 
-if ! command -v svn &> /dev/null
-then
-    echo "svn could not be found, trying to install..."
-    sudo apt-get install subversion -y
-fi
 
-sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
-kubectl kustomize capz_kustomize/ > arcbox.yaml
-clusterctl generate yaml --from arcbox.yaml > template.yaml
+# if ! command -v svn &> /dev/null
+# then
+#     echo "svn could not be found, trying to install..."
+#     sudo apt-get install subversion -y
+# fi
+
+# sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
+# kubectl kustomize capz_kustomize/ > arcbox.yaml
+# clusterctl generate yaml --from arcbox.yaml > template.yaml
 
 # Creating Microsoft Defender for Cloud audit secret
 echo ""
@@ -169,9 +175,63 @@ data:
   username: $(echo -n "jumpstart" | base64 -w0)
 EOF
 
+line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 5)
+sed -i -e "$line"' i\          readOnly: true' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          name: audit-policy' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          mountPath: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\        - hostPath: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          name: kubeaudit' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          mountPath: /var/log/kube-apiserver' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\        - hostPath: /var/log/kube-apiserver' $CLUSTER_NAME.yaml
+line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 2)
+sed -i -e "$line"' i\          audit-policy-file: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          audit-log-path: /var/log/kube-apiserver/audit.log' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          audit-log-maxsize: "100"' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          audit-log-maxbackup: "10"' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          audit-log-maxage: "30"' $CLUSTER_NAME.yaml
+line=$(expr $(grep -n -A 3 files: $CLUSTER_NAME.yaml | grep "control-plane" | cut -f1 -d-) + 5)
+sed -i -e "$line"' i\      permissions: "0644"' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\      path: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\      owner: root:root' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          name: audit' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\          key: audit.yaml' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\        secret:' $CLUSTER_NAME.yaml
+sed -i -e "$line"' i\    - contentFrom:' $CLUSTER_NAME.yaml
+
+sed -i 's/resourceGroup: '$CLUSTER_NAME'/resourceGroup: '$resourceGroup'/g' $CLUSTER_NAME.yaml
+
+# Pre-configuring CAPI cluster control plane Azure Network Security Group to allow only inbound 6443 traffic
+sed '/^  networkSpec:$/r'<(
+    echo '    vnet:'
+    echo "      name: $CLUSTER_NAME-vnet"
+    echo '      cidrBlocks:'
+    echo '        - 10.0.0.0/16'
+) -i -- $CLUSTER_NAME.yaml
+
+sed '/^      role: control-plane$/r'<(
+    echo '      cidrBlocks:'
+    echo '      - 10.0.1.0/24'
+    echo '      securityGroup:'
+    echo "        name: $CLUSTER_NAME-cp-nsg"
+    echo '        securityRules:'
+    echo '          - name: "allow_apiserver"'
+    echo '            description: "Allow K8s API Server"'
+    echo '            direction: "Inbound"'
+    echo '            priority: 2201'
+    echo '            protocol: "*"'
+    echo '            destination: "*"'
+    echo '            destinationPorts: "6443"'
+    echo '            source: "*"'
+    echo '            sourcePorts: "*"'
+) -i -- $CLUSTER_NAME.yaml
+
+kubectl apply -f $CLUSTER_NAME.yaml
+echo ""
+
+
 # Deploying CAPI Workload cluster
 echo ""
-sudo kubectl apply -f template.yaml
+# sudo kubectl apply -f template.yaml
 
 echo ""
 until sudo kubectl get cluster --all-namespaces | grep -q "Provisioned"; do echo "Waiting for Kubernetes control plane to be in Provisioned phase..." && sleep 20 ; done
