@@ -258,7 +258,7 @@ echo ""
 sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand | awk 'length($0) > length(longest) { longest = $0 } { lines[NR] = $0 } END { gsub(/./, "=", longest); print "/=" longest "=\\"; n = length(longest); for(i = 1; i <= NR; ++i) { printf("| %s %*s\n", lines[i], n - length(lines[i]) + 1, "|"); } print "\\=" longest "=/" }'
 
 # CAPI workload cluster kubeconfig housekeeping
-echo ""
+# echo ""
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config.$CLUSTER_NAME
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=~/.kube/config.arcbox-capi-data
@@ -289,6 +289,9 @@ sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
 
 sudo service sshd restart
+
+echo "Login to Az CLI using the service principal"
+az login --service-principal --username $SPN_CLIENT_ID --password $SPN_CLIENT_SECRET --tenant $SPN_TENANT_ID
 
 # Onboarding the cluster to Azure Arc
 echo ""
