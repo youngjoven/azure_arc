@@ -160,21 +160,21 @@ sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/a
 kubectl kustomize capz_kustomize/ > arcbox.yaml
 clusterctl generate yaml --from arcbox.yaml > template.yaml
 
-# # Creating Microsoft Defender for Cloud audit secret
-# echo ""
-# echo "Creating Microsoft Defender for Cloud audit secret"
-# curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
+# Creating Microsoft Defender for Cloud audit secret
+echo ""
+echo "Creating Microsoft Defender for Cloud audit secret"
+curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
-# cat <<EOF | kubectl apply -f -
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: audit
-# type: Opaque
-# data:
-#   audit.yaml: $(cat "audit.yaml" | base64 -w0)
-#   username: $(echo -n "jumpstart" | base64 -w0)
-# EOF
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: audit
+type: Opaque
+data:
+  audit.yaml: $(cat "audit.yaml" | base64 -w0)
+  username: $(echo -n "jumpstart" | base64 -w0)
+EOF
 
 # line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 5)
 # sed -i -e "$line"' i\          readOnly: true' $CLUSTER_NAME.yaml
@@ -288,21 +288,21 @@ sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
 
-# Creating Microsoft Defender for Cloud audit secret
-echo ""
-echo "Creating Microsoft Defender for Cloud audit secret"
-curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
+# # Creating Microsoft Defender for Cloud audit secret
+# echo ""
+# echo "Creating Microsoft Defender for Cloud audit secret"
+# curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
-cat <<EOF | kubectl apply -f --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: audit
-type: Opaque
-data:
-  audit.yaml: $(cat "audit.yaml" | base64 -w0)
-  username: $(echo -n "jumpstart" | base64 -w0)
-EOF
+# cat <<EOF | kubectl apply -f --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME -
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: audit
+# type: Opaque
+# data:
+#   audit.yaml: $(cat "audit.yaml" | base64 -w0)
+#   username: $(echo -n "jumpstart" | base64 -w0)
+# EOF
 
 # cat <<EOF | kubectl apply --kubeconfig .kube/config.arcbox-capi-data -f -
 # apiVersion: v1
