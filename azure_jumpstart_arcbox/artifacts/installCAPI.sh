@@ -118,7 +118,8 @@ clusterctl version
 
 # Installing Helm 3
 echo ""
-sudo snap install helm --channel=3.6/stable --classic # pinning 3.6 due to breaking changes in aak8s onboarding with 3.7
+# sudo snap install helm --channel=3.6/stable --classic # pinning 3.6 due to breaking changes in aak8s onboarding with 3.7
+sudo snap install helm --classic
 
 echo ""
 echo "Making sure Rancher K3s cluster is ready..."
@@ -159,21 +160,21 @@ sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/a
 kubectl kustomize capz_kustomize/ > arcbox.yaml
 clusterctl generate yaml --from arcbox.yaml > template.yaml
 
-# Creating Microsoft Defender for Cloud audit secret
-echo ""
-echo "Creating Microsoft Defender for Cloud audit secret"
-curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
+# # Creating Microsoft Defender for Cloud audit secret
+# echo ""
+# echo "Creating Microsoft Defender for Cloud audit secret"
+# curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
 
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Secret
-metadata:
-  name: audit
-type: Opaque
-data:
-  audit.yaml: $(cat "audit.yaml" | base64 -w0)
-  username: $(echo -n "jumpstart" | base64 -w0)
-EOF
+# cat <<EOF | kubectl apply -f -
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: audit
+# type: Opaque
+# data:
+#   audit.yaml: $(cat "audit.yaml" | base64 -w0)
+#   username: $(echo -n "jumpstart" | base64 -w0)
+# EOF
 
 # line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 5)
 # sed -i -e "$line"' i\          readOnly: true' $CLUSTER_NAME.yaml
@@ -287,16 +288,43 @@ sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
 
+# Creating Microsoft Defender for Cloud audit secret
+echo ""
+echo "Creating Microsoft Defender for Cloud audit secret"
+curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
+
+cat <<EOF | kubectl apply -f --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME -
+apiVersion: v1
+kind: Secret
+metadata:
+  name: audit
+type: Opaque
+data:
+  audit.yaml: $(cat "audit.yaml" | base64 -w0)
+  username: $(echo -n "jumpstart" | base64 -w0)
+EOF
+
+# cat <<EOF | kubectl apply --kubeconfig .kube/config.arcbox-capi-data -f -
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: audit
+# type: Opaque
+# data:
+#   audit.yaml: $(cat "audit.yaml" | base64 -w0)
+#   username: $(echo -n "jumpstart" | base64 -w0)
+# EOF
+
 
 sudo service sshd restart
 
 # Onboarding the cluster to Azure Arc
 echo ""
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
-sudo -u $adminUsername az connectedk8s connect --name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context "$CLUSTER_NAME-admin@$CLUSTER_NAME"
+sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context "$CLUSTER_NAME-admin@$CLUSTER_NAME"
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 # echo ""
-# sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
+sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
 # echo ""
 # sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 
