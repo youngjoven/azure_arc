@@ -142,22 +142,22 @@ echo ""
 # Creating CAPI Workload cluster yaml manifest
 echo "Deploying Kubernetes workload cluster"
 echo ""
-clusterctl generate cluster $CLUSTER_NAME \
-  --kubernetes-version v$KUBERNETES_VERSION \
-  --control-plane-machine-count=$CONTROL_PLANE_MACHINE_COUNT \
-  --worker-machine-count=$WORKER_MACHINE_COUNT \
-  > $CLUSTER_NAME.yaml
+# clusterctl generate cluster $CLUSTER_NAME \
+#   --kubernetes-version v$KUBERNETES_VERSION \
+#   --control-plane-machine-count=$CONTROL_PLANE_MACHINE_COUNT \
+#   --worker-machine-count=$WORKER_MACHINE_COUNT \
+#   > $CLUSTER_NAME.yaml
 
 
-# if ! command -v svn &> /dev/null
-# then
-#     echo "svn could not be found, trying to install..."
-#     sudo apt-get install subversion -y
-# fi
+if ! command -v svn &> /dev/null
+then
+    echo "svn could not be found, trying to install..."
+    sudo apt-get install subversion -y
+fi
 
-# sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
-# kubectl kustomize capz_kustomize/ > arcbox.yaml
-# clusterctl generate yaml --from arcbox.yaml > template.yaml
+sudo svn export https://github.com/microsoft/azure_arc/branches/capi_kustomize/azure_jumpstart_arcbox/artifacts/capz_kustomize
+kubectl kustomize capz_kustomize/ > arcbox.yaml
+clusterctl generate yaml --from arcbox.yaml > template.yaml
 
 # Creating Microsoft Defender for Cloud audit secret
 echo ""
@@ -175,63 +175,63 @@ data:
   username: $(echo -n "jumpstart" | base64 -w0)
 EOF
 
-line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 5)
-sed -i -e "$line"' i\          readOnly: true' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          name: audit-policy' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          mountPath: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\        - hostPath: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          name: kubeaudit' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          mountPath: /var/log/kube-apiserver' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\        - hostPath: /var/log/kube-apiserver' $CLUSTER_NAME.yaml
-line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 2)
-sed -i -e "$line"' i\          audit-policy-file: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          audit-log-path: /var/log/kube-apiserver/audit.log' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          audit-log-maxsize: "100"' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          audit-log-maxbackup: "10"' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          audit-log-maxage: "30"' $CLUSTER_NAME.yaml
-line=$(expr $(grep -n -A 3 files: $CLUSTER_NAME.yaml | grep "control-plane" | cut -f1 -d-) + 5)
-sed -i -e "$line"' i\      permissions: "0644"' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\      path: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\      owner: root:root' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          name: audit' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\          key: audit.yaml' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\        secret:' $CLUSTER_NAME.yaml
-sed -i -e "$line"' i\    - contentFrom:' $CLUSTER_NAME.yaml
+# line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 5)
+# sed -i -e "$line"' i\          readOnly: true' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          name: audit-policy' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          mountPath: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\        - hostPath: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          name: kubeaudit' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          mountPath: /var/log/kube-apiserver' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\        - hostPath: /var/log/kube-apiserver' $CLUSTER_NAME.yaml
+# line=$(expr $(grep -n -B 1 "extraArgs" $CLUSTER_NAME.yaml | grep "apiServer" | cut -f1 -d-) + 2)
+# sed -i -e "$line"' i\          audit-policy-file: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          audit-log-path: /var/log/kube-apiserver/audit.log' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          audit-log-maxsize: "100"' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          audit-log-maxbackup: "10"' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          audit-log-maxage: "30"' $CLUSTER_NAME.yaml
+# line=$(expr $(grep -n -A 3 files: $CLUSTER_NAME.yaml | grep "control-plane" | cut -f1 -d-) + 5)
+# sed -i -e "$line"' i\      permissions: "0644"' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\      path: /etc/kubernetes/audit.yaml' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\      owner: root:root' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          name: audit' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\          key: audit.yaml' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\        secret:' $CLUSTER_NAME.yaml
+# sed -i -e "$line"' i\    - contentFrom:' $CLUSTER_NAME.yaml
 
-sed -i 's/resourceGroup: '$CLUSTER_NAME'/resourceGroup: '$resourceGroup'/g' $CLUSTER_NAME.yaml
+# sed -i 's/resourceGroup: '$CLUSTER_NAME'/resourceGroup: '$resourceGroup'/g' $CLUSTER_NAME.yaml
 
-# Pre-configuring CAPI cluster control plane Azure Network Security Group to allow only inbound 6443 traffic
-sed '/^  networkSpec:$/r'<(
-    echo '    vnet:'
-    echo "      name: $CLUSTER_NAME-vnet"
-    echo '      cidrBlocks:'
-    echo '        - 172.16.0.0/16'
-) -i -- $CLUSTER_NAME.yaml
+# # Pre-configuring CAPI cluster control plane Azure Network Security Group to allow only inbound 6443 traffic
+# sed '/^  networkSpec:$/r'<(
+#     echo '    vnet:'
+#     echo "      name: $CLUSTER_NAME-vnet"
+#     echo '      cidrBlocks:'
+#     echo '        - 10.0.0.0/16'
+# ) -i -- $CLUSTER_NAME.yaml
 
-sed '/^      role: control-plane$/r'<(
-    echo '      cidrBlocks:'
-    echo '      - 172.16.1.0/24'
-    echo '      securityGroup:'
-    echo "        name: $CLUSTER_NAME-cp-nsg"
-    echo '        securityRules:'
-    echo '          - name: "allow_apiserver"'
-    echo '            description: "Allow K8s API Server"'
-    echo '            direction: "Inbound"'
-    echo '            priority: 2201'
-    echo '            protocol: "*"'
-    echo '            destination: "*"'
-    echo '            destinationPorts: "6443"'
-    echo '            source: "*"'
-    echo '            sourcePorts: "*"'
-) -i -- $CLUSTER_NAME.yaml
+# sed '/^      role: control-plane$/r'<(
+#     echo '      cidrBlocks:'
+#     echo '      - 10.0.1.0/24'
+#     echo '      securityGroup:'
+#     echo "        name: $CLUSTER_NAME-cp-nsg"
+#     echo '        securityRules:'
+#     echo '          - name: "allow_apiserver"'
+#     echo '            description: "Allow K8s API Server"'
+#     echo '            direction: "Inbound"'
+#     echo '            priority: 2201'
+#     echo '            protocol: "*"'
+#     echo '            destination: "*"'
+#     echo '            destinationPorts: "6443"'
+#     echo '            source: "*"'
+#     echo '            sourcePorts: "*"'
+# ) -i -- $CLUSTER_NAME.yaml
 
-kubectl apply -f $CLUSTER_NAME.yaml
-echo ""
+# kubectl apply -f $CLUSTER_NAME.yaml
+# echo ""
 
 
 # Deploying CAPI Workload cluster
 echo ""
-# sudo kubectl apply -f template.yaml
+sudo kubectl apply -f template.yaml
 
 echo ""
 until sudo kubectl get cluster --all-namespaces | grep -q "Provisioned"; do echo "Waiting for Kubernetes control plane to be in Provisioned phase..." && sleep 20 ; done
@@ -290,41 +290,41 @@ sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
 sudo service sshd restart
 
-# Onboarding the cluster to Azure Arc
-echo ""
-workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
-sudo -u $adminUsername az connectedk8s connect --name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context "$CLUSTER_NAME-admin@$CLUSTER_NAME"
-# Enabling Container Insights and Microsoft Defender for Containers cluster extensions
-echo ""
-sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
-echo ""
-sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+# # Onboarding the cluster to Azure Arc
+# echo ""
+# workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
+# sudo -u $adminUsername az connectedk8s connect --name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context "$CLUSTER_NAME-admin@$CLUSTER_NAME"
+# # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
+# echo ""
+# sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
+# echo ""
+# sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 
-# Enabling Azure Policy for Kubernetes on the cluster
-echo ""
-sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
+# # Enabling Azure Policy for Kubernetes on the cluster
+# echo ""
+# sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
 
 
-# Creating Storage Class with azure-managed-disk for the CAPI cluster
-echo ""
-sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+# # Creating Storage Class with azure-managed-disk for the CAPI cluster
+# echo ""
+# sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-# Renaming CAPI cluster context name 
-echo ""
-# sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
+# # Renaming CAPI cluster context name 
+# echo ""
+# # sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
 
-# Copying workload CAPI kubeconfig file to staging storage account
-echo ""
-sudo -u $adminUsername az extension add --upgrade -n storage-preview
-storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
-storageContainerName="staging-capi"
-export localPath="/home/${adminUsername}/.kube/config.$CLUSTER_NAME"
-storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
-sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
-sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
-# sudo -u $adminUsername rm $localPath
+# # Copying workload CAPI kubeconfig file to staging storage account
+# echo ""
+# sudo -u $adminUsername az extension add --upgrade -n storage-preview
+# storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
+# storageContainerName="staging-capi"
+# export localPath="/home/${adminUsername}/.kube/config.$CLUSTER_NAME"
+# storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
+# sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
+# sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
+# # sudo -u $adminUsername rm $localPath
 
-# Uploading this script log to staging storage for ease of troubleshooting
-echo ""
-log="/home/${adminUsername}/jumpstart_logs/installCAPI.log"
-sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $log
+# # Uploading this script log to staging storage for ease of troubleshooting
+# echo ""
+# log="/home/${adminUsername}/jumpstart_logs/installCAPI.log"
+# sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $log
