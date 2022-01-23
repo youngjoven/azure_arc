@@ -78,11 +78,12 @@
                     }
                 },
                 {
-                    "name": "(ArcBox) Azure Arc enabled Kubernetes clusters should have Microsoft Defender's extension installed",
-                    "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/8dfab9c4-fe7b-49ad-85e4-1e9be085358f",
+                    "name": "(ArcBox) Enable Microsoft Defender on Kubernetes clusters",
+                    "definitionId": "/providers/Microsoft.Authorization/policyDefinitions/708b60a6-d253-4fe0-9114-4be4c00f012c",
                     "flavors": [ "Full" ],
-                    "roleDefinition": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+                    "roleDefinition": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '92aaf0da-9dab-42b6-94a3-d43ce8d16293')]",
                     "parameters": {
+
                     }
                 }
             ]
