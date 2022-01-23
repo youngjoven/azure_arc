@@ -247,8 +247,6 @@ clusterctl get kubeconfig $CLUSTER_NAME > $CLUSTER_NAME.kubeconfig
 echo ""
 sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/kubernetes-sigs/cluster-api-provider-azure/main/templates/addons/calico.yaml
 
-# sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
 echo ""
 CLUSTER_TOTAL_MACHINE_COUNT=`expr $CONTROL_PLANE_MACHINE_COUNT + $WORKER_MACHINE_COUNT`
 export CLUSTER_TOTAL_MACHINE_COUNT="$(echo $CLUSTER_TOTAL_MACHINE_COUNT)"
@@ -322,15 +320,16 @@ sudo service sshd restart
 echo ""
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
 sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context "$CLUSTER_NAME-admin@$CLUSTER_NAME"
-# Enabling Container Insights and Microsoft Defender for Containers cluster extensions
-# echo ""
-sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $CLUSTER_NAME --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
-# echo ""
-# sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 
-# # Enabling Azure Policy for Kubernetes on the cluster
-# echo ""
-# sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
+# Enabling Container Insights and Microsoft Defender for Containers cluster extensions
+# Enabling Azure Policy for Kubernetes on the cluster
+echo ""
+sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
+
+echo ""
+sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+echo ""
+sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
 
 
 # # Creating Storage Class with azure-managed-disk for the CAPI cluster
