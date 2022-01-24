@@ -46,7 +46,7 @@ $context = (Get-AzStorageAccount -ResourceGroupName $env:resourceGroup).Context
 $sas = New-AzStorageAccountSASToken -Context $context -Service Blob -ResourceType Object -Permission racwdlup
 $sourceFile = $sourceFile + $sas
 azcopy cp --check-md5 FailIfDifferentOrMissing $sourceFile  "C:\Users\$env:USERNAME\.kube\config"
-kubectl config rename-context "$env:capiArcDataClusterName-admin@$env:capiArcDataClusterName" "arcbox-capi"
+# kubectl config rename-context "$env:capiArcDataClusterName-admin@$env:capiArcDataClusterName" "arcbox-capi"
 
 # Downloading 'installCAPI.log' log file
 Write-Host "Downloading 'installCAPI.log' log file"

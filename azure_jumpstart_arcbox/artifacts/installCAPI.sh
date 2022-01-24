@@ -262,7 +262,7 @@ echo ""
 # export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 # mv /var/lib/waagent/custom-script/download/0/kubeconfig /var/lib/waagent/custom-script/download/0/config.k3s
-sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/kubeconfig /home/${adminUsername}/.kube/config.mgmt
+sudo -u $adminUsername cp /home/${adminUsername}/.kube/config.staging /home/${adminUsername}/.kube/config.mgmt
 sudo -u $adminUsername rm -f /home/${adminUsername}/.kube/config.staging
 # sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
@@ -312,7 +312,7 @@ sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/micros
 
 # Renaming CAPI cluster context name 
 echo ""
-# sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
+sudo kubectl config rename-context "$capiArcDataClusterName-admin@$capiArcDataClusterName" "arcbox-capi"
 
 # Copying workload CAPI kubeconfig file to staging storage account
 echo ""
