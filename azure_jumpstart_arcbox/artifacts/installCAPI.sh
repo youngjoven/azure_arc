@@ -256,10 +256,10 @@ echo ""
 sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand | awk 'length($0) > length(longest) { longest = $0 } { lines[NR] = $0 } END { gsub(/./, "=", longest); print "/=" longest "=\\"; n = length(longest); for(i = 1; i <= NR; ++i) { printf("| %s %*s\n", lines[i], n - length(lines[i]) + 1, "|"); } print "\\=" longest "=/" }'
 
 # CAPI workload cluster kubeconfig housekeeping
-# echo ""
-cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config.$CLUSTER_NAME
-cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
-export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
+echo ""
+# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config.$CLUSTER_NAME
+# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+# export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 
 sudo -u $adminUsername cp ~/.kube/config ~/.kube/config.k3s
@@ -267,7 +267,7 @@ sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download
 
 # clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config
+clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config
 
 
 # sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
@@ -285,33 +285,6 @@ sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUs
 # sudo -s $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config4
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
-
-# # Creating Microsoft Defender for Cloud audit secret
-# echo ""
-# echo "Creating Microsoft Defender for Cloud audit secret"
-# curl -o audit.yaml https://raw.githubusercontent.com/Azure/Azure-Security-Center/master/Pricing%20%26%20Settings/Defender%20for%20Kubernetes/audit-policy.yaml
-
-# cat <<EOF | kubectl apply -f --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME -
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: audit
-# type: Opaque
-# data:
-#   audit.yaml: $(cat "audit.yaml" | base64 -w0)
-#   username: $(echo -n "jumpstart" | base64 -w0)
-# EOF
-
-# cat <<EOF | kubectl apply --kubeconfig .kube/config.arcbox-capi-data -f -
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: audit
-# type: Opaque
-# data:
-#   audit.yaml: $(cat "audit.yaml" | base64 -w0)
-#   username: $(echo -n "jumpstart" | base64 -w0)
-# EOF
 
 
 sudo service sshd restart
