@@ -262,7 +262,8 @@ echo ""
 # export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 # mv /var/lib/waagent/custom-script/download/0/kubeconfig /var/lib/waagent/custom-script/download/0/config.k3s
-sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/kubeconfig /home/${adminUsername}/.kube/config.mgmt
+sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/kubeconfig /home/${adminUsername}/.kube/config.mgmt
+sudo -u $adminUsername rm -f /home/${adminUsername}/.kube/config.staging
 # sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
 # clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
@@ -280,7 +281,7 @@ clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
 # sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
-sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
+# sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
 # sudo -u $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config3
 # sudo -s $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config4
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
