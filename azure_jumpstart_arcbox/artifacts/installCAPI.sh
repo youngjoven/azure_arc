@@ -261,9 +261,9 @@ echo ""
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 # export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
-
-sudo -u $adminUsername cp ~/.kube/config ~/.kube/config.k3s
-sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
+# mv /var/lib/waagent/custom-script/download/0/kubeconfig /var/lib/waagent/custom-script/download/0/config.k3s
+sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/kubeconfig /home/${adminUsername}/.kube/config.mgmt
+# sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
 # clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
@@ -280,7 +280,7 @@ clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
 # sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
-# sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
+sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
 # sudo -u $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config3
 # sudo -s $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config4
 # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
@@ -296,11 +296,11 @@ sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --
 
 # Enabling Azure Policy for Kubernetes on the cluster
 echo ""
-sudo -u $adminUsername az k8s-extension create -n "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
+sudo -u $adminUsername az k8s-extension create --name "arc-azurepolicy" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.PolicyInsights 
 
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 echo ""
-sudo -u $adminUsername az k8s-extension create -n "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
+sudo -u $adminUsername az k8s-extension create --name "azuremonitor-containers" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId
 echo ""
 # sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
 
