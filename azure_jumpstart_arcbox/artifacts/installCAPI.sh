@@ -262,11 +262,12 @@ cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${ad
 export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 
-sudo cp ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
+sudo -u $adminUsername cp ~/.kube/config ~/.kube/config.k3s
+sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
 # clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
 
-# sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config4
+sudo -u $adminUsername clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config
 
 
 # sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
@@ -318,7 +319,7 @@ sudo service sshd restart
 # Onboarding the cluster to Azure Arc
 echo ""
 workspaceResourceId=$(sudo -u $adminUsername az resource show --resource-group $AZURE_RESOURCE_GROUP --name $logAnalyticsWorkspace --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
-sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox' --kube-config /home/${adminUsername}/.kube/config.$CLUSTER_NAME --kube-context "$CLUSTER_NAME-admin@$CLUSTER_NAME"
+sudo -u $adminUsername az connectedk8s connect --name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --location $location --tags 'Project=jumpstart_arcbox'
 
 # Enabling Azure Policy for Kubernetes on the cluster
 echo ""
@@ -331,26 +332,26 @@ echo ""
 # sudo -u $adminUsername az k8s-extension create -n "azure-defender" --cluster-name $capiArcDataClusterName --resource-group $AZURE_RESOURCE_GROUP --cluster-type connectedClusters --extension-type Microsoft.AzureDefender.Kubernetes --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceResourceId --debug
 
 
-# # Creating Storage Class with azure-managed-disk for the CAPI cluster
-# echo ""
-# sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml --kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
+# Creating Storage Class with azure-managed-disk for the CAPI cluster
+echo ""
+sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/microsoft/azure_arc/main/azure_jumpstart_arcbox/artifacts/capiStorageClass.yaml
 
-# # Renaming CAPI cluster context name 
-# echo ""
-# # sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
+# Renaming CAPI cluster context name 
+echo ""
+# sudo kubectl config rename-context "arcbox-capi-data-admin@arcbox-capi-data" "arcbox-capi"
 
-# # Copying workload CAPI kubeconfig file to staging storage account
-# echo ""
-# sudo -u $adminUsername az extension add --upgrade -n storage-preview
-# storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
-# storageContainerName="staging-capi"
-# export localPath="/home/${adminUsername}/.kube/config.$CLUSTER_NAME"
-# storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
-# sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
-# sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
-# # sudo -u $adminUsername rm $localPath
+# Copying workload CAPI kubeconfig file to staging storage account
+echo ""
+sudo -u $adminUsername az extension add --upgrade -n storage-preview
+storageAccountRG=$(sudo -u $adminUsername az storage account show --name $stagingStorageAccountName --query 'resourceGroup' | sed -e 's/^"//' -e 's/"$//')
+storageContainerName="staging-capi"
+export localPath="/home/${adminUsername}/.kube/config"
+storageAccountKey=$(sudo -u $adminUsername az storage account keys list --resource-group $storageAccountRG --account-name $stagingStorageAccountName --query [0].value | sed -e 's/^"//' -e 's/"$//')
+sudo -u $adminUsername az storage container create -n $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey
+sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $localPath
+# sudo -u $adminUsername rm $localPath
 
-# # Uploading this script log to staging storage for ease of troubleshooting
-# echo ""
-# log="/home/${adminUsername}/jumpstart_logs/installCAPI.log"
-# sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $log
+# Uploading this script log to staging storage for ease of troubleshooting
+echo ""
+log="/home/${adminUsername}/jumpstart_logs/installCAPI.log"
+sudo -u $adminUsername az storage azcopy blob upload --container $storageContainerName --account-name $stagingStorageAccountName --account-key $storageAccountKey --source $log
