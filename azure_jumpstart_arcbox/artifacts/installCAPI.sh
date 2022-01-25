@@ -102,6 +102,7 @@ sudo k3sup install --local --context arcboxcapimgmt --k3s-extra-args '--no-deplo
 sudo chmod 644 /etc/rancher/k3s/k3s.yaml
 sudo cp kubeconfig ~/.kube/config
 sudo cp kubeconfig /home/${adminUsername}/.kube/config
+sudo cp kubeconfig /home/${adminUsername}/.kube/config-mgmt
 sudo cp kubeconfig /home/${adminUsername}/.kube/config.staging
 chown -R $adminUsername /home/${adminUsername}/.kube/
 chown -R staginguser /home/${adminUsername}/.kube/config.staging
@@ -262,7 +263,7 @@ echo ""
 # export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
 
 # mv /var/lib/waagent/custom-script/download/0/kubeconfig /var/lib/waagent/custom-script/download/0/config.k3s
-sudo -u $adminUsername cp /home/${adminUsername}/.kube/config.staging /home/${adminUsername}/.kube/config.mgmt
+# sudo -u $adminUsername cp /home/${adminUsername}/.kube/config.staging /home/${adminUsername}/.kube/config.mgmt
 sudo -u $adminUsername rm -f /home/${adminUsername}/.kube/config.staging
 # sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
 
@@ -312,7 +313,7 @@ sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/micros
 
 # Renaming CAPI cluster context name 
 echo ""
-sudo kubectl config rename-context "$capiArcDataClusterName-admin@$capiArcDataClusterName" "arcbox-capi"
+sudo -u $adminUsername kubectl config rename-context "$capiArcDataClusterName-admin@$capiArcDataClusterName" "arcbox-capi"
 
 # Copying workload CAPI kubeconfig file to staging storage account
 echo ""
