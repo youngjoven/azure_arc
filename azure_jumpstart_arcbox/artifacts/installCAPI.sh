@@ -256,38 +256,10 @@ sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig label node -l '!node-role.k
 echo ""
 sudo kubectl --kubeconfig=./$CLUSTER_NAME.kubeconfig get nodes -o wide | expand | awk 'length($0) > length(longest) { longest = $0 } { lines[NR] = $0 } END { gsub(/./, "=", longest); print "/=" longest "=\\"; n = length(longest); for(i = 1; i <= NR; ++i) { printf("| %s %*s\n", lines[i], n - length(lines[i]) + 1, "|"); } print "\\=" longest "=/" }'
 
-# CAPI workload cluster kubeconfig housekeeping
+# kubeconfig files housekeeping
 echo ""
-# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config.$CLUSTER_NAME
-# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
-# export KUBECONFIG=~/.kube/config.$CLUSTER_NAME
-
-# mv /var/lib/waagent/custom-script/download/0/kubeconfig /var/lib/waagent/custom-script/download/0/config.k3s
-# sudo -u $adminUsername cp /home/${adminUsername}/.kube/config.staging /home/${adminUsername}/.kube/config.mgmt
 sudo -u $adminUsername rm -f /home/${adminUsername}/.kube/config.staging
-# sudo -u $adminUsername mv ~/.kube/config /var/lib/waagent/custom-script/download/0/config.k3s
-
-# clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config.$CLUSTER_NAME
-
 clusterctl get kubeconfig $CLUSTER_NAME > /home/${adminUsername}/.kube/config
-
-
-# sudo -u $adminUsername cp /home/${adminUsername}/.kube/config /home/${adminUsername}/.kube/config.k3s
-# sudo -u $adminUsername rm /home/${adminUsername}/.kube/config
-
-# sudo -u $adminUsername mv /home/${adminUsername}/.kube/config.$CLUSTER_NAME /home/${adminUsername}/.kube/config
-
-# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig ~/.kube/config
-# # cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.workload
-# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
-
-# sudo -u $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config
-# sudo -s $adminUsername cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config2
-# sudo -u $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config3
-# sudo -s $adminUsername cp ./$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config4
-# cp /var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig /home/${adminUsername}/.kube/config.$CLUSTER_NAME
-# export KUBECONFIG=/var/lib/waagent/custom-script/download/0/$CLUSTER_NAME.kubeconfig
-
 
 sudo service sshd restart
 
@@ -313,7 +285,7 @@ sudo -u $adminUsername kubectl apply -f https://raw.githubusercontent.com/micros
 
 # Renaming CAPI cluster context name 
 echo ""
-sudo -u $adminUsername kubectl config rename-context "$capiArcDataClusterName-admin@$capiArcDataClusterName" "arcbox-capi"
+sudo -u $adminUsername kubectl config rename-context "$CLUSTER_NAME-admin@$CLUSTER_NAME" "arcbox-capi"
 
 # Copying workload CAPI kubeconfig file to staging storage account
 echo ""
